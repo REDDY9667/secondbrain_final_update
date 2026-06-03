@@ -1,0 +1,241 @@
+<div class="dashboard-container">
+  <div class="welcome-section">
+    <h1>Welcome back, {{ user?.name }}!</h1>
+    <p class="subtitle">Here's your learning progress</p>
+  </div>
+
+  <div class="stats-grid">
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>library_books</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ conceptStats()?.total || user?.stats?.totalConcepts || 0 }}</h3>
+          <p>Total Concepts</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon confidence">
+          <mat-icon>trending_up</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ conceptStats()?.averageConfidence?.toFixed(1) || user?.stats?.averageConfidence || 0 }}%</h3>
+          <p>Avg Confidence</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon due">
+          <mat-icon>alarm</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ conceptStats()?.dueConcepts || 0 }}</h3>
+          <p>Due for Review</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon streak">
+          <mat-icon>local_fire_department</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ user?.stats?.currentStreak || 0 }} days</h3>
+          <p>Current Streak</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Detailed Statistics Section -->
+  @if (conceptStats() && !loadingStats()) {
+    <div class="detailed-stats">
+      <h2>Detailed Statistics</h2>
+
+      <div class="stats-breakdown">
+        <!-- Difficulty Breakdown -->
+        <mat-card class="breakdown-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>signal_cellular_alt</mat-icon>
+              By Difficulty Level
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="breakdown-items">
+              <div class="breakdown-item beginner">
+                <div class="item-header">
+                  <span class="item-label">Beginner</span>
+                  <span class="item-value">{{ conceptStats()!.byDifficulty.beginner }}</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill"
+                       [style.width.%]="(conceptStats()!.byDifficulty.beginner / conceptStats()!.total) * 100">
+                  </div>
+                </div>
+              </div>
+
+              <div class="breakdown-item intermediate">
+                <div class="item-header">
+                  <span class="item-label">Intermediate</span>
+                  <span class="item-value">{{ conceptStats()!.byDifficulty.intermediate }}</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill"
+                       [style.width.%]="(conceptStats()!.byDifficulty.intermediate / conceptStats()!.total) * 100">
+                  </div>
+                </div>
+              </div>
+
+              <div class="breakdown-item advanced">
+                <div class="item-header">
+                  <span class="item-label">Advanced</span>
+                  <span class="item-value">{{ conceptStats()!.byDifficulty.advanced }}</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill"
+                       [style.width.%]="(conceptStats()!.byDifficulty.advanced / conceptStats()!.total) * 100">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Confidence Distribution -->
+        <mat-card class="breakdown-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>psychology</mat-icon>
+              By Confidence Level
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="breakdown-items">
+              <div class="breakdown-item low-confidence">
+                <div class="item-header">
+                  <span class="item-label">Low (&lt; 40%)</span>
+                  <span class="item-value">{{ conceptStats()!.byConfidence.low }}</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill"
+                       [style.width.%]="(conceptStats()!.byConfidence.low / conceptStats()!.total) * 100">
+                  </div>
+                </div>
+              </div>
+
+              <div class="breakdown-item medium-confidence">
+                <div class="item-header">
+                  <span class="item-label">Medium (40-69%)</span>
+                  <span class="item-value">{{ conceptStats()!.byConfidence.medium }}</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill"
+                       [style.width.%]="(conceptStats()!.byConfidence.medium / conceptStats()!.total) * 100">
+                  </div>
+                </div>
+              </div>
+
+              <div class="breakdown-item high-confidence">
+                <div class="item-header">
+                  <span class="item-label">High (≥ 70%)</span>
+                  <span class="item-value">{{ conceptStats()!.byConfidence.high }}</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill"
+                       [style.width.%]="(conceptStats()!.byConfidence.high / conceptStats()!.total) * 100">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  }
+
+  @if (loadingStats()) {
+    <div class="loading-stats">
+      <mat-icon>hourglass_empty</mat-icon>
+      <p>Loading detailed statistics...</p>
+    </div>
+  }
+
+  <div class="navigation-section">
+    <h2>Quick Access</h2>
+    <div class="nav-cards">
+      <mat-card class="nav-card" (click)="navigateToConcepts()">
+        <mat-card-content>
+          <mat-icon>library_books</mat-icon>
+          <h3>Concepts</h3>
+          <p>View and manage your learning concepts</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="nav-card" (click)="navigateToSources()">
+        <mat-card-content>
+          <mat-icon>source</mat-icon>
+          <h3>Sources</h3>
+          <p>Manage your learning materials and files</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="nav-card" (click)="navigateToAddConcept()">
+        <mat-card-content>
+          <mat-icon>add_circle</mat-icon>
+          <h3>Add Concept</h3>
+          <p>Create a new learning concept</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="nav-card" (click)="navigateToUploadSource()">
+        <mat-card-content>
+          <mat-icon>upload_file</mat-icon>
+          <h3>Upload Source</h3>
+          <p>Add new learning materials</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <div class="action-section">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Quick Actions</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="action-buttons">
+          <button mat-raised-button color="primary" (click)="navigateToAddConcept()">
+            <mat-icon>add</mat-icon>
+            Add Concept
+          </button>
+          <button mat-raised-button color="accent" (click)="navigateToUploadSource()">
+            <mat-icon>upload_file</mat-icon>
+            Upload Source
+          </button>
+          <button mat-raised-button (click)="navigateToChallenges()">
+            <mat-icon>psychology</mat-icon>
+            Take Challenge
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="coming-soon">
+    <mat-card>
+      <mat-card-content>
+        <mat-icon>construction</mat-icon>
+        <h3>More Features Coming Soon!</h3>
+        <p>AI challenges and decay detection are coming in Phase 3.</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

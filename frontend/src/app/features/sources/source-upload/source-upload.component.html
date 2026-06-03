@@ -1,0 +1,195 @@
+<div class="upload-container">
+  <div class="header">
+    <h1>Add Source</h1>
+    <p class="subtitle">Upload files or add URLs to your knowledge base</p>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <mat-tab-group>
+        <!-- File Upload Tab -->
+        <mat-tab label="Upload File">
+          <div class="tab-content">
+            <form [formGroup]="fileForm" (ngSubmit)="uploadFile()">
+              <!-- Drag and Drop Area -->
+              <div
+                class="drop-zone"
+                [class.dragging]="isDragging()"
+                [class.has-file]="selectedFile()"
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)"
+                (click)="fileInput.click()"
+              >
+                <input
+                  #fileInput
+                  type="file"
+                  hidden
+                  accept=".pdf,.txt,.md,.json"
+                  (change)="onFileSelected($event)"
+                />
+
+                <div *ngIf="!selectedFile()" class="drop-zone-content">
+                  <mat-icon>cloud_upload</mat-icon>
+                  <h3>Drag & Drop your file here</h3>
+                  <p>or click to browse</p>
+                  <p class="file-info">Supported: PDF, TXT, MD, JSON (Max 10MB)</p>
+                </div>
+
+                <div *ngIf="selectedFile()" class="selected-file">
+                  <mat-icon color="primary">description</mat-icon>
+                  <div class="file-details">
+                    <h4>{{ selectedFile()!.name }}</h4>
+                    <p>{{ formatFileSize(selectedFile()!.size) }}</p>
+                  </div>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    (click)="removeFile(); $event.stopPropagation()"
+                  >
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <!-- File Metadata Form -->
+              <div class="form-fields" *ngIf="selectedFile()">
+                <mat-form-field appearance="outline">
+                  <mat-label>Title</mat-label>
+                  <input matInput formControlName="title" placeholder="Enter source title" />
+                  <mat-error *ngIf="fileForm.get('title')?.hasError('required')">
+                    Title is required
+                  </mat-error>
+                  <mat-error *ngIf="fileForm.get('title')?.hasError('minlength')">
+                    Title must be at least 2 characters
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Type</mat-label>
+                  <mat-select formControlName="type">
+                    <mat-option *ngFor="let type of sourceTypes" [value]="type.value">
+                      {{ type.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Tags (comma-separated)</mat-label>
+                  <input
+                    matInput
+                    formControlName="tags"
+                    placeholder="e.g. javascript, tutorial, advanced"
+                  />
+                </mat-form-field>
+
+                <!-- Progress Bar -->
+                <mat-progress-bar
+                  *ngIf="uploading()"
+                  mode="determinate"
+                  [value]="uploadProgress()"
+                ></mat-progress-bar>
+
+                <!-- Action Buttons -->
+                <div class="actions">
+                  <button mat-button type="button" (click)="cancel()" [disabled]="uploading()">
+                    Cancel
+                  </button>
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    type="submit"
+                    [disabled]="fileForm.invalid || uploading()"
+                  >
+                    <mat-icon>upload</mat-icon>
+                    {{ uploading() ? 'Uploading...' : 'Upload File' }}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </mat-tab>
+
+        <!-- URL Tab -->
+        <mat-tab label="Add URL">
+          <div class="tab-content">
+            <form [formGroup]="urlForm" (ngSubmit)="submitUrl()">
+              <div class="form-fields">
+                <mat-form-field appearance="outline">
+                  <mat-label>URL</mat-label>
+                  <input
+                    matInput
+                    formControlName="url"
+                    placeholder="https://example.com/article"
+                  />
+                  <mat-icon matPrefix>link</mat-icon>
+                  <mat-error *ngIf="urlForm.get('url')?.hasError('required')">
+                    URL is required
+                  </mat-error>
+                  <mat-error *ngIf="urlForm.get('url')?.hasError('pattern')">
+                    Please enter a valid URL (http:// or https://)
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Title</mat-label>
+                  <input matInput formControlName="title" placeholder="Enter source title" />
+                  <mat-error *ngIf="urlForm.get('title')?.hasError('required')">
+                    Title is required
+                  </mat-error>
+                  <mat-error *ngIf="urlForm.get('title')?.hasError('minlength')">
+                    Title must be at least 2 characters
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Type</mat-label>
+                  <mat-select formControlName="type">
+                    <mat-option *ngFor="let type of sourceTypes" [value]="type.value">
+                      {{ type.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Content/Summary (Optional)</mat-label>
+                  <textarea
+                    matInput
+                    formControlName="content"
+                    rows="4"
+                    placeholder="Add notes or summary about this source"
+                  ></textarea>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Tags (comma-separated)</mat-label>
+                  <input
+                    matInput
+                    formControlName="tags"
+                    placeholder="e.g. javascript, tutorial, advanced"
+                  />
+                </mat-form-field>
+
+                <!-- Action Buttons -->
+                <div class="actions">
+                  <button mat-button type="button" (click)="cancel()" [disabled]="uploading()">
+                    Cancel
+                  </button>
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    type="submit"
+                    [disabled]="urlForm.invalid || uploading()"
+                  >
+                    <mat-icon>add</mat-icon>
+                    {{ uploading() ? 'Creating...' : 'Add Source' }}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+</div>

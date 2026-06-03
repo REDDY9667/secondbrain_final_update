@@ -1,0 +1,150 @@
+<div class="concept-list-container">
+  <div class="header">
+    <h1>My Concepts</h1>
+    <button class="btn btn-primary" (click)="createConcept()">
+      <span class="icon">+</span> New Concept
+    </button>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters">
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search concepts..."
+        [value]="searchTerm()"
+        (input)="onSearch($any($event.target).value)"
+        class="search-input"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label>Difficulty:</label>
+      <select
+        [value]="selectedDifficulty()"
+        (change)="onDifficultyChange($any($event.target).value)"
+        class="filter-select"
+      >
+        <option value="">All</option>
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Sort by:</label>
+      <select
+        [value]="sortBy()"
+        (change)="onSortChange($any($event.target).value)"
+        class="filter-select"
+      >
+        <option value="createdAt">Date Created</option>
+        <option value="updatedAt">Last Updated</option>
+        <option value="title">Title</option>
+        <option value="confidenceScore">Confidence</option>
+        <option value="nextReview">Next Review</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading concepts...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <div class="error-message">
+      <span class="icon">⚠️</span>
+      <p>{{ error() }}</p>
+      <button (click)="loadConcepts()" class="btn btn-secondary">Retry</button>
+    </div>
+  }
+
+  <!-- Concepts Grid -->
+  @if (!loading() && !error()) {
+    @if (concepts().length === 0) {
+      <div class="empty-state">
+        <p>No concepts found. Create your first concept to get started!</p>
+        <button class="btn btn-primary" (click)="createConcept()">Create Concept</button>
+      </div>
+    } @else {
+      <div class="concepts-grid">
+        @for (concept of concepts(); track concept._id) {
+          <div class="concept-card" (click)="viewConcept(concept._id)">
+            <div class="concept-header">
+              <h3>{{ concept.title }}</h3>
+              <div class="actions" (click)="$event.stopPropagation()">
+                <button class="btn-icon" (click)="editConcept(concept._id)" title="Edit">
+                  ✏️
+                </button>
+                <button class="btn-icon" (click)="deleteConcept(concept._id)" title="Delete">
+                  🗑️
+                </button>
+              </div>
+            </div>
+
+            <p class="description">{{ concept.description }}</p>
+
+            <div class="meta-info">
+              <span class="badge" [ngClass]="getDifficultyClass(concept.difficulty)">
+                {{ concept.difficulty }}
+              </span>
+
+              <span class="badge" [ngClass]="getConfidenceClass(concept.confidenceScore)">
+                {{ concept.confidenceScore }}% confidence
+              </span>
+
+              @if (concept.tags && concept.tags.length > 0) {
+                <div class="tags">
+                  @for (tag of concept.tags.slice(0, 3); track tag) {
+                    <span class="tag">{{ tag }}</span>
+                  }
+                  @if (concept.tags.length > 3) {
+                    <span class="tag">+{{ concept.tags.length - 3 }}</span>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="concept-footer">
+              <small>Reviews: {{ concept.reviewCount }}</small>
+              @if (concept.nextReview) {
+                <small>Next review: {{ concept.nextReview | date: 'short' }}</small>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button
+            class="btn btn-secondary"
+            [disabled]="currentPage() === 1"
+            (click)="onPageChange(currentPage() - 1)"
+          >
+            Previous
+          </button>
+
+          <span class="page-info">
+            Page {{ currentPage() }} of {{ totalPages() }} ({{ totalConcepts() }} total)
+          </span>
+
+          <button
+            class="btn btn-secondary"
+            [disabled]="currentPage() === totalPages()"
+            (click)="onPageChange(currentPage() + 1)"
+          >
+            Next
+          </button>
+        </div>
+      }
+    }
+  }
+</div>

@@ -1,0 +1,66 @@
+<div class="login-container">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <mat-card-title>
+        <h1>SecondBrain</h1>
+        <p class="subtitle">Sign in to your account</p>
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            type="email"
+            formControlName="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+          />
+          <mat-error *ngIf="emailControl?.hasError('required')">
+            Email is required
+          </mat-error>
+          <mat-error *ngIf="emailControl?.hasError('email')">
+            Please enter a valid email
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            type="password"
+            formControlName="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          />
+          <mat-error *ngIf="passwordControl?.hasError('required')">
+            Password is required
+          </mat-error>
+          <mat-error *ngIf="passwordControl?.hasError('minlength')">
+            Password must be at least 6 characters
+          </mat-error>
+        </mat-form-field>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          class="full-width submit-button"
+          [disabled]="loginForm.invalid || loading"
+        >
+          <span *ngIf="!loading">Sign In</span>
+          <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+        </button>
+      </form>
+
+      <div class="auth-links">
+        <p>
+          Don't have an account?
+          <a routerLink="/auth/register">Create one</a>
+        </p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

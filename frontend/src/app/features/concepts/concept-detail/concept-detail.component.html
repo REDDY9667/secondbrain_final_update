@@ -1,0 +1,131 @@
+<div class="concept-detail-container">
+  <!-- Loading State -->
+  @if (loading()) {
+  <div class="loading">
+    <div class="spinner"></div>
+    <p>Loading concept...</p>
+  </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+  <div class="error-message">
+    <span class="icon">⚠️</span>
+    <p>{{ error() }}</p>
+    <div class="error-actions">
+      <button (click)="goBack()" class="btn btn-secondary">Go Back</button>
+      <button (click)="loadConcept(concept()?._id || '')" class="btn btn-primary">Retry</button>
+    </div>
+  </div>
+  }
+
+  <!-- Concept Detail -->
+  @if (concept() && !loading()) {
+  <div class="concept-header">
+    <div class="header-top">
+      <button class="btn-back" (click)="goBack()">← Back to Concepts</button>
+      <div class="actions">
+        <button class="btn btn-primary" (click)="openReviewDialog()" [disabled]="reviewing()">
+          {{ reviewing() ? 'Reviewing...' : '📝 Review Concept' }}
+        </button>
+        <button class="btn btn-primary" (click)="takeChallenge()"> 🎯 Take Challenge </button>
+        <button class="btn btn-secondary" (click)="editConcept()">Edit</button>
+        <button class="btn btn-danger" (click)="deleteConcept()">Delete</button>
+      </div>
+    </div>
+
+    <h1>{{ concept()?.title }}</h1>
+
+    <div class="meta-badges">
+      <span class="badge" [ngClass]="getDifficultyClass(concept()!.difficulty)">
+        {{ concept()?.difficulty }}
+      </span>
+      <span class="badge" [ngClass]="getConfidenceClass(concept()!.confidenceScore)">
+        {{ concept()?.confidenceScore }}% Confidence
+      </span>
+      @if (concept()?.tags && concept()!.tags.length > 0) {
+      @for (tag of concept()!.tags; track tag) {
+      <span class="badge badge-tag">{{ tag }}</span>
+      }
+      }
+    </div>
+  </div>
+
+  <div class="concept-body">
+    <!-- Description Section -->
+    <section class="section">
+      <h2>Description</h2>
+      <p class="description">{{ concept()?.description }}</p>
+    </section>
+
+    <!-- Notes Section -->
+    @if (concept()?.notes) {
+    <section class="section">
+      <h2>Additional Notes</h2>
+      <div class="notes">{{ concept()?.notes }}</div>
+    </section>
+    }
+
+    <!-- Source Info -->
+    @if (concept()?.sourceId) {
+    <section class="section">
+      <h2>Source</h2>
+      <div class="source-info">
+        <span class="source-type">{{ concept()?.sourceId?.type }}</span>
+        <a [routerLink]="['/sources', concept()?.sourceId?._id]" class="source-link">
+          {{ concept()?.sourceId?.title }}
+        </a>
+      </div>
+    </section>
+    }
+
+    <!-- Review Stats -->
+    <section class="section">
+      <h2>Review Statistics</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Reviews</div>
+          <div class="stat-value">{{ concept()?.reviewCount }}</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Ease Factor</div>
+          <div class="stat-value">{{ concept()?.easeFactor?.toFixed(2) }}</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Review Interval</div>
+          <div class="stat-value">{{ concept()?.reviewInterval }} days</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Last Reviewed</div>
+          <div class="stat-value small">{{ formatDate(concept()?.lastReviewed) }}</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Next Review</div>
+          <div class="stat-value small">{{ formatDate(concept()?.nextReview) }}</div>
+        </div>
+
+        @if (concept()?.isDue) {
+        <div class="stat-card due">
+          <div class="stat-label">Status</div>
+          <div class="stat-value">Review Due!</div>
+        </div>
+        }
+      </div>
+    </section>
+
+    <!-- Timestamps -->
+    <section class="section timestamps">
+      <div class="timestamp">
+        <strong>Created:</strong> {{ concept()?.createdAt | date: 'medium' }}
+      </div>
+      <div class="timestamp">
+        <strong>Last Updated:</strong> {{ concept()?.updatedAt | date: 'medium' }}
+      </div>
+    </section>
+  </div>
+  }
+</div>

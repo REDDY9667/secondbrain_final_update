@@ -1,0 +1,170 @@
+<div class="source-detail-container">
+  <!-- Loading State -->
+  <div class="loading" *ngIf="loading()">
+    <mat-spinner></mat-spinner>
+    <p>Loading source...</p>
+  </div>
+
+  <!-- Source Detail -->
+  <div *ngIf="!loading() && source()" class="source-detail">
+    <div class="header">
+      <button mat-icon-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>Source Details</h1>
+      <div class="actions">
+        <button mat-raised-button color="primary" (click)="extractConcepts()" [disabled]="source()!.processed">
+          <mat-icon>auto_awesome</mat-icon>
+          {{ source()!.processed ? 'Already Extracted' : 'Extract Concepts' }}
+        </button>
+        <button mat-button color="warn" (click)="deleteSource()">
+          <mat-icon>delete</mat-icon>
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <mat-card class="main-card">
+      <mat-card-content>
+        <div class="source-header">
+          <div class="type-indicator" [style.background-color]="getTypeColor(source()!.type)">
+            <mat-icon>{{ getTypeIcon(source()!.type) }}</mat-icon>
+          </div>
+          <div class="header-info">
+            <h2>{{ source()!.title }}</h2>
+            <div class="type-badge">
+              <mat-chip>{{ source()!.type.toUpperCase() }}</mat-chip>
+              <mat-chip [class.processed]="source()!.processed">
+                <mat-icon>{{ source()!.processed ? 'check_circle' : 'pending' }}</mat-icon>
+                {{ source()!.processed ? 'Processed' : 'Pending' }}
+              </mat-chip>
+            </div>
+          </div>
+        </div>
+
+        <!-- URL Section -->
+        <div class="info-section" *ngIf="source()!.url">
+          <h3>
+            <mat-icon>link</mat-icon>
+            URL
+          </h3>
+          <div class="url-container">
+            <a [href]="source()!.url" target="_blank" class="url-link">
+              {{ source()!.url }}
+            </a>
+            <button mat-icon-button (click)="openUrl(source()!.url!)">
+              <mat-icon>open_in_new</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- File Information -->
+        <div class="info-section" *ngIf="source()!.fileName">
+          <h3>
+            <mat-icon>attach_file</mat-icon>
+            File Information
+          </h3>
+          <div class="file-info">
+            <div class="info-row">
+              <span class="label">Filename:</span>
+              <span class="value">{{ source()!.fileName }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Size:</span>
+              <span class="value">{{ formatFileSize(source()!.fileSize) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Section -->
+        <div class="info-section" *ngIf="source()!.content">
+          <h3>
+            <mat-icon>description</mat-icon>
+            Content
+          </h3>
+          <div class="content-box">
+            <p>{{ source()!.content }}</p>
+          </div>
+        </div>
+
+        <!-- Tags Section -->
+        <div class="info-section" *ngIf="source()!.tags && source()!.tags.length > 0">
+          <h3>
+            <mat-icon>label</mat-icon>
+            Tags
+          </h3>
+          <div class="tags-container">
+            <mat-chip *ngFor="let tag of source()!.tags">{{ tag }}</mat-chip>
+          </div>
+        </div>
+
+        <!-- Metadata Section -->
+        <div class="info-section" *ngIf="source()!.metadata">
+          <h3>
+            <mat-icon>info</mat-icon>
+            Metadata
+          </h3>
+          <div class="metadata-grid">
+            <div class="metadata-item" *ngIf="source()!.metadata.author">
+              <span class="label">Author:</span>
+              <span class="value">{{ source()!.metadata.author }}</span>
+            </div>
+            <div class="metadata-item" *ngIf="source()!.metadata.publishedDate">
+              <span class="label">Published:</span>
+              <span class="value">{{ formatDate(source()!.metadata.publishedDate!) }}</span>
+            </div>
+            <div class="metadata-item" *ngIf="source()!.metadata.pageCount">
+              <span class="label">Pages:</span>
+              <span class="value">{{ source()!.metadata.pageCount }}</span>
+            </div>
+            <div class="metadata-item" *ngIf="source()!.metadata.wordCount">
+              <span class="label">Words:</span>
+              <span class="value">{{ source()!.metadata.wordCount }}</span>
+            </div>
+            <div class="metadata-item" *ngIf="source()!.metadata.duration">
+              <span class="label">Duration:</span>
+              <span class="value">{{ source()!.metadata.duration }} seconds</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Concepts Section -->
+        <div class="info-section">
+          <h3>
+            <mat-icon>library_books</mat-icon>
+            Linked Concepts
+          </h3>
+          <div class="concepts-info">
+            <p>
+              <strong>{{ source()!.conceptCount }}</strong> concepts linked to this source
+            </p>
+            <button mat-stroked-button color="primary" (click)="viewLinkedConcepts()">
+              View Linked Concepts
+            </button>
+          </div>
+        </div>
+
+        <!-- Timestamps -->
+        <div class="timestamps">
+          <div class="timestamp-item">
+            <mat-icon>event</mat-icon>
+            <span>Created: {{ formatDate(source()!.createdAt) }}</span>
+          </div>
+          <div class="timestamp-item">
+            <mat-icon>update</mat-icon>
+            <span>Updated: {{ formatDate(source()!.updatedAt) }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Future Feature Card -->
+    <mat-card class="feature-card">
+      <mat-card-content>
+        <mat-icon>auto_awesome</mat-icon>
+        <h3>Coming Soon: AI Extraction</h3>
+        <p>Automatically extract concepts from this source using AI (Phase 3)</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

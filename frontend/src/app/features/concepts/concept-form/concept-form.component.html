@@ -1,0 +1,132 @@
+<div class="concept-form-container">
+  <div class="header">
+    <h1>{{ isEditMode() ? 'Edit Concept' : 'Create New Concept' }}</h1>
+  </div>
+
+  @if (error()) {
+    <div class="error-message">
+      <span class="icon">⚠️</span>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  <form [formGroup]="conceptForm" (ngSubmit)="onSubmit()" class="concept-form">
+    <!-- Title Field -->
+    <div class="form-group">
+      <label for="title">Title <span class="required">*</span></label>
+      <input
+        id="title"
+        type="text"
+        formControlName="title"
+        class="form-control"
+        placeholder="Enter concept title"
+      />
+      @if (getFieldError('title')) {
+        <span class="error-text">{{ getFieldError('title') }}</span>
+      }
+    </div>
+
+    <!-- Description Field -->
+    <div class="form-group">
+      <label for="description">Description <span class="required">*</span></label>
+      <textarea
+        id="description"
+        formControlName="description"
+        class="form-control"
+        rows="4"
+        placeholder="Describe the concept..."
+      ></textarea>
+      @if (getFieldError('description')) {
+        <span class="error-text">{{ getFieldError('description') }}</span>
+      }
+    </div>
+
+    <!-- Notes Field -->
+    <div class="form-group">
+      <label for="notes">Additional Notes</label>
+      <textarea
+        id="notes"
+        formControlName="notes"
+        class="form-control"
+        rows="6"
+        placeholder="Add any additional notes or examples..."
+      ></textarea>
+      @if (getFieldError('notes')) {
+        <span class="error-text">{{ getFieldError('notes') }}</span>
+      }
+    </div>
+
+    <!-- Difficulty Field -->
+    <div class="form-group">
+      <label for="difficulty">Difficulty Level <span class="required">*</span></label>
+      <select id="difficulty" formControlName="difficulty" class="form-control">
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+    </div>
+
+    <!-- Source Field -->
+    <div class="form-group">
+      <label for="sourceId">Link to Source (Optional)</label>
+      @if (loadingSources()) {
+        <div class="loading-sources">
+          <span class="spinner-small"></span>
+          <span>Loading sources...</span>
+        </div>
+      } @else {
+        <select id="sourceId" formControlName="sourceId" class="form-control">
+          <option value="">-- No Source --</option>
+          @for (source of sources(); track source._id) {
+            <option [value]="source._id">
+              {{ source.title }} ({{ source.type }})
+            </option>
+          }
+        </select>
+      }
+    </div>
+
+    <!-- Tags Field -->
+    <div class="form-group">
+      <label for="tag-input">Tags</label>
+      <div class="tag-input-container">
+        <input
+          id="tag-input"
+          type="text"
+          [value]="tagInput()"
+          (input)="tagInput.set($any($event.target).value)"
+          (keypress)="onTagKeyPress($event)"
+          class="form-control"
+          placeholder="Type a tag and press Enter"
+        />
+        <button type="button" class="btn-add-tag" (click)="addTag(tagInput())">Add Tag</button>
+      </div>
+
+      @if (getTags().length > 0) {
+        <div class="tags-list">
+          @for (tag of getTags(); track tag) {
+            <span class="tag">
+              {{ tag }}
+              <button type="button" class="remove-tag" (click)="removeTag(tag)">×</button>
+            </span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="loading() || conceptForm.invalid">
+        @if (loading()) {
+          <span class="spinner"></span>
+          {{ isEditMode() ? 'Updating...' : 'Creating...' }}
+        } @else {
+          {{ isEditMode() ? 'Update Concept' : 'Create Concept' }}
+        }
+      </button>
+    </div>
+  </form>
+</div>

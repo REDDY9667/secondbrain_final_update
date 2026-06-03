@@ -1,0 +1,160 @@
+<div class="challenge-taking-container">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>Challenge Yourself</h1>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading() && !generating()) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Loading challenges...</p>
+    </div>
+  }
+
+  <!-- Generating State -->
+  @if (generating()) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Generating AI-powered challenges...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <mat-card class="error-card">
+      <mat-card-content>
+        <mat-icon color="warn">error</mat-icon>
+        <p>{{ error() }}</p>
+        <button mat-raised-button color="primary" (click)="loadChallenges()">
+          Retry
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Challenge Content -->
+  @if (getCurrentChallenge() && !loading() && !generating()) {
+    <div class="challenge-content">
+      <!-- Progress Header -->
+      <div class="progress-header">
+        <div class="progress-info">
+          <span class="challenge-number">
+            Challenge {{ currentChallengeIndex() + 1 }} of {{ challenges().length }}
+          </span>
+          <mat-chip [class]="getDifficultyClass(getCurrentChallenge()!.difficulty)">
+            <mat-icon>{{ getDifficultyIcon(getCurrentChallenge()!.difficulty) }}</mat-icon>
+            {{ getCurrentChallenge()!.difficulty }}
+          </mat-chip>
+        </div>
+        <div class="progress-bar">
+          <div
+            class="progress-fill"
+            [style.width.%]="((currentChallengeIndex() + 1) / challenges().length) * 100">
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Card -->
+      <mat-card class="question-card">
+        <mat-card-content>
+          <h2 class="question-text">{{ getCurrentChallenge()!.question }}</h2>
+
+          <!-- Answer Options -->
+          <div class="options-list">
+            @for (option of getCurrentChallenge()!.options; track $index) {
+              <div
+                class="option-item"
+                [class.selected]="selectedAnswer() === $index"
+                [class.correct]="showResult() && $index === getCurrentChallenge()!.correctAnswer"
+                [class.incorrect]="showResult() && selectedAnswer() === $index && $index !== getCurrentChallenge()!.correctAnswer"
+                [class.disabled]="showResult()"
+                (click)="selectAnswer($index)">
+                <mat-radio-button
+                  [value]="$index"
+                  [checked]="selectedAnswer() === $index"
+                  [disabled]="showResult()">
+                  {{ option }}
+                </mat-radio-button>
+                @if (showResult() && $index === getCurrentChallenge()!.correctAnswer) {
+                  <mat-icon class="result-icon correct">check_circle</mat-icon>
+                }
+                @if (showResult() && selectedAnswer() === $index && $index !== getCurrentChallenge()!.correctAnswer) {
+                  <mat-icon class="result-icon incorrect">cancel</mat-icon>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Result Feedback -->
+          @if (showResult() && attemptResult()) {
+            <div class="result-feedback" [class.correct]="attemptResult()!.correct" [class.incorrect]="!attemptResult()!.correct">
+              <div class="result-header">
+                <mat-icon>{{ attemptResult()!.correct ? 'check_circle' : 'error' }}</mat-icon>
+                <h3>{{ attemptResult()!.correct ? 'Correct!' : 'Not quite right' }}</h3>
+              </div>
+              <p class="explanation">{{ getCurrentChallenge()!.explanation }}</p>
+              @if (attemptResult()!.pointsEarned) {
+                <div class="points-earned">
+                  <mat-icon>star</mat-icon>
+                  <span>+{{ attemptResult()!.pointsEarned }} points</span>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            @if (!showResult()) {
+              <button
+                mat-raised-button
+                color="primary"
+                [disabled]="selectedAnswer() === null"
+                (click)="submitAnswer()">
+                Submit Answer
+              </button>
+            } @else {
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="nextChallenge()">
+                {{ currentChallengeIndex() < challenges().length - 1 ? 'Next Challenge' : 'Finish' }}
+              </button>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Stats Card -->
+      @if (showResult() && attemptResult()) {
+        <mat-card class="stats-card">
+          <mat-card-content>
+            <h3>Your Progress</h3>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-label">New Confidence</span>
+                <span class="stat-value">{{ attemptResult()!.newConfidence }}%</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Change</span>
+                <span class="stat-value" [class.positive]="(attemptResult()!.confidenceChange ?? 0) > 0"
+[class.negative]="(attemptResult()!.confidenceChange ?? 0) < 0">
+                  {{ (attemptResult()!.confidenceChange ?? 0) > 0 ? '+' : '' }}
+{{ attemptResult()!.confidenceChange ?? 0 }}%
+                </span>
+              </div>
+              @if (attemptResult()!.nextReview) {
+                <div class="stat-item">
+                  <span class="stat-label">Next Review</span>
+                  <span class="stat-value">{{ attemptResult()!.nextReview | date: 'short' }}</span>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

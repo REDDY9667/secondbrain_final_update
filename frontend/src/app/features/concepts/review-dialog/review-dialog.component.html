@@ -1,0 +1,102 @@
+<div class="review-dialog">
+  <h2 mat-dialog-title>Review Concept</h2>
+
+  <mat-dialog-content>
+    <div class="concept-question">
+      <h3>{{ data.concept.title }}</h3>
+      <p class="instruction">
+        Try to recall everything you know about this concept before revealing the answer.
+      </p>
+
+      <!-- Current Confidence Display -->
+      <div class="current-stats">
+        <div class="stat-item">
+          <span class="label">Current Confidence:</span>
+          <span class="value" [ngClass]="getConfidenceClass(data.concept.confidenceScore)">
+            {{ data.concept.confidenceScore }}%
+          </span>
+        </div>
+        <div class="stat-item">
+          <span class="label">Reviews:</span>
+          <span class="value">{{ data.concept.reviewCount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Show Answer Button -->
+    <div class="answer-section" *ngIf="!showAnswer()">
+      <button mat-raised-button color="accent" (click)="toggleAnswer()" class="show-answer-btn">
+        <mat-icon>visibility</mat-icon>
+        Show Answer
+      </button>
+    </div>
+
+    <!-- Answer Display -->
+    <div class="answer-content" *ngIf="showAnswer()">
+      <div class="answer-header">
+        <h4>
+          <mat-icon>lightbulb</mat-icon>
+          Answer
+        </h4>
+        <button mat-icon-button (click)="toggleAnswer()">
+          <mat-icon>visibility_off</mat-icon>
+        </button>
+      </div>
+
+      <div class="answer-text">
+        <div class="description-section">
+          <strong>Description:</strong>
+          <p>{{ data.concept.description }}</p>
+        </div>
+
+        <div class="notes-section" *ngIf="data.concept.notes">
+          <strong>Notes:</strong>
+          <p>{{ data.concept.notes }}</p>
+        </div>
+
+        <div class="tags-section" *ngIf="data.concept.tags && data.concept.tags.length > 0">
+          <strong>Tags:</strong>
+          <div class="tags">
+            <span class="tag" *ngFor="let tag of data.concept.tags">{{ tag }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Rating -->
+      <div class="performance-rating">
+        <h4>How well did you recall this concept?</h4>
+        <div class="performance-options">
+          <button
+            *ngFor="let option of performanceOptions"
+            mat-stroked-button
+            class="performance-btn"
+            [class.selected]="selectedPerformance() === option.value"
+            [style.border-color]="
+              selectedPerformance() === option.value ? option.color : undefined
+            "
+            (click)="selectPerformance(option.value)"
+          >
+            <mat-icon [style.color]="option.color">{{ option.icon }}</mat-icon>
+            <div class="performance-info">
+              <span class="performance-label">{{ option.label }}</span>
+              <span class="performance-desc">{{ option.description }}</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="submitReview()"
+      [disabled]="!showAnswer() || !selectedPerformance()"
+    >
+      <mat-icon>check</mat-icon>
+      Submit Review
+    </button>
+  </mat-dialog-actions>
+</div>

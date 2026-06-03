@@ -1,0 +1,131 @@
+<div class="source-list-container">
+  <div class="header">
+    <div class="title-section">
+      <h1>Sources</h1>
+      <p class="subtitle">Manage your learning materials and resources</p>
+    </div>
+    <button mat-raised-button color="primary" routerLink="/sources/new">
+      <mat-icon>add</mat-icon>
+      Add Source
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters">
+        <mat-form-field appearance="outline">
+          <mat-label>Type</mat-label>
+          <mat-select [(ngModel)]="selectedType" (selectionChange)="onFilterChange()">
+            <mat-option *ngFor="let type of sourceTypes" [value]="type.value">
+              {{ type.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="selectedProcessed" (selectionChange)="onFilterChange()">
+            <mat-option *ngFor="let option of processedOptions" [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="stats">
+          <span class="total-count">Total: {{ totalSources() }} sources</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Loading State -->
+  <div class="loading" *ngIf="loading()">
+    <mat-spinner></mat-spinner>
+    <p>Loading sources...</p>
+  </div>
+
+  <!-- Empty State -->
+  <mat-card *ngIf="!loading() && sources().length === 0" class="empty-state">
+    <mat-card-content>
+      <mat-icon>source</mat-icon>
+      <h3>No sources found</h3>
+      <p>Start by adding your first learning resource</p>
+      <button mat-raised-button color="primary" routerLink="/sources/new">
+        <mat-icon>add</mat-icon>
+        Add Your First Source
+      </button>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Sources Grid -->
+  <div class="sources-grid" *ngIf="!loading() && sources().length > 0">
+    <mat-card *ngFor="let source of sources()" class="source-card" (click)="viewSource(source._id)">
+      <mat-card-content>
+        <div class="source-header">
+          <div class="type-indicator" [style.background-color]="getTypeColor(source.type)">
+            <mat-icon>{{ getTypeIcon(source.type) }}</mat-icon>
+          </div>
+          <button
+            mat-icon-button
+            class="delete-btn"
+            (click)="deleteSource(source._id, $event)"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+
+        <h3 class="source-title">{{ source.title }}</h3>
+
+        <div class="source-meta">
+          <div class="meta-item" *ngIf="source.url">
+            <mat-icon>link</mat-icon>
+            <span class="url-preview">{{ source.url }}</span>
+          </div>
+
+          <div class="meta-item" *ngIf="source.fileName">
+            <mat-icon>attach_file</mat-icon>
+            <span>{{ source.fileName }} ({{ formatFileSize(source.fileSize) }})</span>
+          </div>
+
+          <div class="meta-item">
+            <mat-icon>event</mat-icon>
+            <span>{{ formatDate(source.createdAt) }}</span>
+          </div>
+        </div>
+
+        <div class="source-tags" *ngIf="source.tags && source.tags.length > 0">
+          <mat-chip *ngFor="let tag of source.tags.slice(0, 3)">{{ tag }}</mat-chip>
+          <mat-chip *ngIf="source.tags.length > 3">+{{ source.tags.length - 3 }}</mat-chip>
+        </div>
+
+        <div class="source-footer">
+          <div class="concept-count">
+            <mat-icon>library_books</mat-icon>
+            <span>{{ source.conceptCount }} concepts</span>
+          </div>
+
+          <div class="processed-badge" [class.processed]="source.processed">
+            <mat-icon>{{ source.processed ? 'check_circle' : 'pending' }}</mat-icon>
+            <span>{{ source.processed ? 'Processed' : 'Pending' }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!loading() && sources().length > 0">
+    <button mat-button (click)="previousPage()" [disabled]="currentPage() === 1">
+      <mat-icon>chevron_left</mat-icon>
+      Previous
+    </button>
+
+    <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
+
+    <button mat-button (click)="nextPage()" [disabled]="currentPage() === totalPages()">
+      Next
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </div>
+</div>

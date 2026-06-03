@@ -1,0 +1,218 @@
+<div class="study-plan-container">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>Your Study Plan</h1>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+  <div class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Generating your personalized study plan...</p>
+  </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+  <mat-card class="error-card">
+    <mat-card-content>
+      <mat-icon color="warn">error</mat-icon>
+      <p>{{ error() }}</p>
+      <button mat-raised-button color="primary" (click)="loadDailyPlan()">
+        Retry
+      </button>
+    </mat-card-content>
+  </mat-card>
+  }
+
+  <!-- Study Plan Content -->
+  @if (dailyPlan() && !loading()) {
+  <div class="study-plan-content">
+    <!-- Plan Overview -->
+    <mat-card class="overview-card">
+      <mat-card-content>
+        <div class="overview-header">
+          <div class="date-info">
+            <mat-icon>today</mat-icon>
+            <div>
+              <h2>{{ dailyPlan()!.date | date: 'fullDate' }}</h2>
+              <p>Your personalized learning plan</p>
+            </div>
+          </div>
+          <div class="time-estimate">
+            <mat-icon>schedule</mat-icon>
+            <div>
+              <h3>{{ getTotalEstimatedTime() }}</h3>
+              <p>minutes total</p>
+            </div>
+          </div>
+        </div>
+
+        @if (dailyPlan()!.summary) {
+        <div class="summary-stats">
+          <span>🔴 Critical: {{ dailyPlan()!.summary.critical }}</span>
+          <span>🟠 High: {{ dailyPlan()!.summary.high }}</span>
+          <span>🟡 Medium: {{ dailyPlan()!.summary.medium }}</span>
+          <span>🟢 Low: {{ dailyPlan()!.summary.low }}</span>
+        </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Tabs for Today's Plan and Focus Areas -->
+    <mat-tab-group (selectedIndexChange)="onTabChange($event)" [selectedIndex]="selectedTab()">
+      <!-- Today's Plan Tab -->
+      <mat-tab label="Today's Plan">
+        <div class="tab-content">
+          @if (dailyPlan()!.suggestions.length > 0) {
+          <div class="suggestions-list">
+            @for (suggestion of dailyPlan()!.suggestions; track suggestion.conceptId) {
+            <mat-card class="suggestion-card" [class]="getPriorityClass(suggestion.priority)">
+              <mat-card-content>
+                <div class="suggestion-header">
+                  <div class="suggestion-title">
+                    <mat-icon [class]="getPriorityClass(suggestion.priority)">
+                      {{ getPriorityIcon(suggestion.priority) }}
+                    </mat-icon>
+                    <h3>{{ suggestion.title }}</h3>
+                  </div>
+                  <mat-chip [class]="getPriorityClass(suggestion.priority)">
+                    {{ suggestion.priority }}
+                  </mat-chip>
+                </div>
+
+                <div class="suggestion-body">
+                  <div class="reason">
+                    <mat-icon>lightbulb</mat-icon>
+                    <p>{{ suggestion.reason }}</p>
+                  </div>
+
+                  <div class="metrics">
+                    <div class="metric">
+                      <mat-icon>schedule</mat-icon>
+                      <span>{{ suggestion.estimatedTime }} min</span>
+                    </div>
+                    @if (suggestion.metrics) {
+                    <div class="metric">
+                      <mat-icon>trending_up</mat-icon>
+                      <span>Confidence: {{ suggestion.metrics.confidenceScore }}%</span>
+                    </div>
+                    }
+                  </div>
+                  @if (suggestion.actions && suggestion.actions.length > 0) {
+                  <div class="actions-list">
+
+                    <h4>Recommended Actions:</h4>
+                    <ul>
+                      @for (action of suggestion.actions; track $index) {
+                      <li>{{ action }}
+
+                      </li>
+                      }
+                    </ul>
+                  </div>
+                  }
+
+                  <div class="action-buttons">
+                    <button mat-raised-button color="primary" (click)="navigateToConcept(suggestion.conceptId)">
+                      <mat-icon>visibility</mat-icon>
+                      Review Concept
+                    </button>
+                    <button mat-stroked-button color="primary" (click)="startChallenge(suggestion.conceptId)">
+                      <mat-icon>quiz</mat-icon>
+                      Take Challenge
+                    </button>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+            }
+          </div>
+          } @else {
+          <mat-card class="empty-card">
+            <mat-card-content>
+              <mat-icon>check_circle</mat-icon>
+              <h2>All Caught Up!</h2>
+              <p>No urgent items for today. Great job staying on track!</p>
+              <button mat-raised-button color="primary" routerLink="/dashboard">
+                Back to Dashboard
+              </button>
+            </mat-card-content>
+          </mat-card>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- Focus Areas Tab -->
+      <mat-tab label="Focus Areas">
+        <div class="tab-content">
+          @if (loadingFocus()) {
+          <div class="loading-container">
+            <mat-spinner></mat-spinner>
+            <p>Loading focus areas...</p>
+          </div>
+          } @else if (focusAreas().length > 0) {
+          <div class="focus-areas-grid">
+            @for (area of focusAreas(); track area.category) {
+            <mat-card class="focus-area-card">
+              <mat-card-content>
+                <div class="focus-header">
+                  <mat-icon>category</mat-icon>
+                  <h3>{{ area.category }}</h3>
+                </div>
+
+                <div class="focus-stats">
+                  <div class="stat">
+                    <span class="label">Concepts</span>
+                    <span class="value">{{ area.conceptCount }}</span>
+                  </div>
+                  <div class="stat">
+                    <span class="label">Avg Confidence</span>
+                    <span class="value">{{ area.averageConfidence }}%</span>
+                  </div>
+                </div>
+
+                @if (area.recommendations && area.recommendations.length > 0) {
+                <div class="recommendations">
+                  <h4>Recommendations:</h4>
+                  <ul>
+                    @for (rec of area.recommendations; track $index) {
+                    <li>{{ rec }}</li>
+                    }
+                  </ul>
+                </div>
+                }
+
+                @if (area.weakConcepts && area.weakConcepts.length > 0) {
+                <div class="weak-concepts">
+                  <h4>Areas to Review:</h4>
+                  <div class="concept-chips">
+                    @for (concept of area.weakConcepts; track concept.id) {
+                    <mat-chip (click)="navigateToConcept(concept.id)">
+                      {{ concept.title }}
+                    </mat-chip>
+                    }
+                  </div>
+                </div>
+                }
+              </mat-card-content>
+            </mat-card>
+            }
+          </div>
+          } @else {
+          <mat-card class="empty-card">
+            <mat-card-content>
+              <mat-icon>category</mat-icon>
+              <h2>No Focus Areas Yet</h2>
+              <p>Add more concepts to get personalized focus area recommendations.</p>
+            </mat-card-content>
+          </mat-card>
+          }
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+  }
+</div>

@@ -1,0 +1,176 @@
+<div class="decay-alerts-container">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>Knowledge Decay Analysis</h1>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Analyzing your knowledge decay...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <mat-card class="error-card">
+      <mat-card-content>
+        <mat-icon color="warn">error</mat-icon>
+        <p>{{ error() }}</p>
+        <button mat-raised-button color="primary" (click)="loadDecayAnalysis()">
+          Retry
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Analysis Content -->
+  @if (analysis() && !loading()) {
+    <div class="analysis-content">
+      <!-- Summary Cards -->
+      <div class="summary-grid">
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <div class="stat-icon total">
+              <mat-icon>library_books</mat-icon>
+            </div>
+            <div class="stat-info">
+              <h3>{{ analysis()!.totalConcepts }}</h3>
+              <p>Total Concepts</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <div class="stat-icon at-risk">
+              <mat-icon>warning</mat-icon>
+            </div>
+            <div class="stat-info">
+              <h3>{{ analysis()!.conceptsAtRisk }}</h3>
+              <p>At Risk</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <div class="stat-icon critical">
+              <mat-icon>error</mat-icon>
+            </div>
+            <div class="stat-info">
+              <h3>{{ analysis()!.summary.critical }}</h3>
+              <p>Critical</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <div class="stat-icon high">
+              <mat-icon>priority_high</mat-icon>
+            </div>
+            <div class="stat-info">
+              <h3>{{ analysis()!.summary.high }}</h3>
+              <p>High Priority</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Recommendations -->
+      @if (analysis()!.recommendations.length > 0) {
+        <mat-card class="recommendations-card">
+          <mat-card-header>
+            <mat-icon>lightbulb</mat-icon>
+            <h2>Recommendations</h2>
+          </mat-card-header>
+          <mat-card-content>
+            <ul class="recommendations-list">
+              @for (recommendation of analysis()!.recommendations; track $index) {
+                <li>{{ recommendation }}</li>
+              }
+            </ul>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- Decay Alerts -->
+      @if (analysis()!.alerts.length > 0) {
+        <div class="alerts-section">
+          <h2>Decay Alerts ({{ analysis()!.alerts.length }})</h2>
+
+          <div class="alerts-list">
+            @for (alert of analysis()!.alerts; track alert.conceptId) {
+              <mat-card
+                class="alert-card"
+                [ngClass]="getSeverityClass(alert.severity)"
+                (click)="navigateToConcept(alert.conceptId)">
+                <mat-card-content>
+                  <div class="alert-header">
+                    <div class="alert-title">
+                      <mat-icon [class]="getSeverityClass(alert.severity)">
+                        {{ getSeverityIcon(alert.severity) }}
+                      </mat-icon>
+                      <h3>{{ alert.title }}</h3>
+                    </div>
+                    <mat-chip [class]="getSeverityClass(alert.severity)">
+                      {{ alert.severity }}
+                    </mat-chip>
+                  </div>
+
+                  <div class="alert-body">
+                    <div class="alert-type">
+                      <mat-icon>category</mat-icon>
+                      <span>{{ getDecayTypeLabel(alert.decayType) }}</span>
+                    </div>
+
+                    <p class="alert-message">{{ alert.message }}</p>
+
+                    <div class="metrics">
+                      <div class="metric">
+                        <span class="label">Confidence:</span>
+                        <span class="value">{{ alert.metrics.currentConfidence }}%</span>
+                      </div>
+                      @if (alert.metrics.daysOverdue) {
+                        <div class="metric">
+                          <span class="label">Days Overdue:</span>
+                          <span class="value">{{ alert.metrics.daysOverdue }}</span>
+                        </div>
+                      }
+                      @if (alert.metrics.daysSinceLastReview) {
+                        <div class="metric">
+                          <span class="label">Days Since Review:</span>
+                          <span class="value">{{ alert.metrics.daysSinceLastReview }}</span>
+                        </div>
+                      }
+                    </div>
+
+                    <div class="recommended-action">
+                      <mat-icon>check_circle</mat-icon>
+                      <span>{{ alert.recommendedAction }}</span>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            }
+          </div>
+        </div>
+      } @else {
+        <mat-card class="no-alerts-card">
+          <mat-card-content>
+            <mat-icon>celebration</mat-icon>
+            <h2>All Clear!</h2>
+            <p>You have no concepts at risk. Great job staying on top of your reviews!</p>
+            <button mat-raised-button color="primary" routerLink="/dashboard">
+              Back to Dashboard
+            </button>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

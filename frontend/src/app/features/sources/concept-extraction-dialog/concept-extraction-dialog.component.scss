@@ -1,0 +1,297 @@
+.extraction-dialog {
+  h2[mat-dialog-title] {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    padding: 24px 24px 16px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+
+    mat-icon {
+      color: #667eea;
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  mat-dialog-content {
+    padding: 0 24px;
+    max-height: 70vh;
+    min-width: 700px;
+
+    .loading-container,
+    .error-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 64px 0;
+      text-align: center;
+
+      mat-spinner {
+        margin-bottom: 24px;
+      }
+
+      mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        margin-bottom: 16px;
+      }
+
+      p {
+        margin: 0 0 8px 0;
+        font-size: 16px;
+        color: #333;
+
+        &.hint {
+          font-size: 14px;
+          color: #666;
+        }
+      }
+
+      button {
+        margin-top: 16px;
+      }
+    }
+
+    .concepts-container {
+      .header-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        margin-bottom: 16px;
+        border-bottom: 1px solid #e0e0e0;
+
+        .selection-info {
+          .count {
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+          }
+        }
+
+        .selection-actions {
+          display: flex;
+          gap: 8px;
+
+          button {
+            mat-icon {
+              font-size: 18px;
+              width: 18px;
+              height: 18px;
+              margin-right: 6px;
+            }
+          }
+        }
+      }
+
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 48px 0;
+        text-align: center;
+
+        mat-icon {
+          font-size: 80px;
+          width: 80px;
+          height: 80px;
+          color: #ccc;
+          margin-bottom: 16px;
+        }
+
+        p {
+          margin: 0 0 8px 0;
+          font-size: 16px;
+          color: #666;
+
+          &.hint {
+            font-size: 14px;
+            color: #999;
+          }
+        }
+      }
+
+      .concepts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 16px;
+
+        .concept-card {
+          transition: all 0.2s ease;
+          border: 2px solid transparent;
+
+          &.selected {
+            border-color: #667eea;
+            background: #f5f7ff;
+          }
+
+          mat-card-content {
+            padding: 20px;
+
+            .concept-header {
+              display: flex;
+              align-items: flex-start;
+              gap: 16px;
+              margin-bottom: 16px;
+
+              mat-checkbox {
+                margin-top: 4px;
+              }
+
+              .concept-title {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+
+                &.editing {
+                  flex-direction: column;
+                  align-items: stretch;
+                  gap: 12px;
+
+                  mat-form-field {
+                    width: 100%;
+                  }
+                }
+
+                h3 {
+                  flex: 1;
+                  margin: 0;
+                  font-size: 18px;
+                  font-weight: 600;
+                  color: #333;
+                }
+
+                mat-chip {
+                  display: flex;
+                  align-items: center;
+                  gap: 4px;
+                  font-size: 11px;
+                  font-weight: 600;
+                  text-transform: uppercase;
+
+                  mat-icon {
+                    font-size: 14px;
+                    width: 14px;
+                    height: 14px;
+                  }
+
+                  &.difficulty-beginner {
+                    background: #4caf50;
+                    color: white;
+                  }
+
+                  &.difficulty-intermediate {
+                    background: #ff9800;
+                    color: white;
+                  }
+
+                  &.difficulty-advanced {
+                    background: #f44336;
+                    color: white;
+                  }
+                }
+              }
+
+              .concept-actions {
+                display: flex;
+                gap: 4px;
+              }
+            }
+
+            .concept-description {
+              margin: 0 0 16px 56px;
+              font-size: 15px;
+              color: #666;
+              line-height: 1.6;
+            }
+
+            .full-width {
+              width: calc(100% - 56px);
+              margin-left: 56px;
+              margin-bottom: 16px;
+            }
+
+            .tags-section {
+              margin-left: 56px;
+
+              .tags-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-bottom: 12px;
+
+                mat-chip {
+                  font-size: 12px;
+                }
+              }
+
+              .add-tag {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                .tag-input {
+                  flex: 1;
+                  max-width: 300px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  mat-dialog-actions {
+    padding: 16px 24px 24px;
+    gap: 12px;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      mat-spinner {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .extraction-dialog {
+    mat-dialog-content {
+      min-width: unset;
+      max-width: 100%;
+
+      .concepts-container {
+        .header-controls {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+        }
+
+        .concepts-list {
+          .concept-card {
+            mat-card-content {
+              .concept-description,
+              .full-width,
+              .tags-section {
+                margin-left: 0;
+                width: 100%;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

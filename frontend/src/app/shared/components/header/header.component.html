@@ -1,0 +1,57 @@
+<mat-toolbar color="primary" class="header">
+  <div class="header-content">
+    <div class="logo" routerLink="/dashboard">
+      <mat-icon>psychology</mat-icon>
+      <span>SecondBrain</span>
+    </div>
+
+    <nav class="nav-links">
+      <a mat-button routerLink="/dashboard" routerLinkActive="active">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a mat-button routerLink="/concepts" routerLinkActive="active">
+        <mat-icon>library_books</mat-icon>
+        Concepts
+      </a>
+      <a mat-button routerLink="/sources" routerLinkActive="active">
+        <mat-icon>source</mat-icon>
+        Sources
+      </a>
+      <a mat-button routerLink="/study-plan" routerLinkActive="active">
+        <mat-icon>calendar_today</mat-icon>
+        Study Plan
+      </a>
+      <a mat-button routerLink="/decay-alerts" routerLinkActive="active">
+        <mat-icon>warning</mat-icon>
+        Decay Alerts
+      </a>
+    </nav>
+
+    <div class="header-actions">
+      <button mat-icon-button>
+        <mat-icon>notifications</mat-icon>
+      </button>
+
+      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+
+      <mat-menu #userMenu="matMenu">
+        <div class="user-info">
+          <p class="user-name">{{ user?.name }}</p>
+          <p class="user-email">{{ user?.email }}</p>
+        </div>
+        <mat-divider></mat-divider>
+        <button mat-menu-item routerLink="/settings">
+          <mat-icon>settings</mat-icon>
+          <span>Settings</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+</mat-toolbar>
