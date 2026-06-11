@@ -30,3 +30,17 @@ Thumbs.db
 
 # Keep only main README
 !README.md
+
+
+# Serverless build artifacts
+.serverless/
+
+# Deployment packages
+*.zip
+
+# Lambda build output
+dist/
+
+# Environment files
+.env
+.env.*
