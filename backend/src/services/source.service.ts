@@ -2,6 +2,7 @@ import Source, { ISourceDocument } from '../models/Source';
 import { AppError } from '../utils/helpers';
 import fs from 'fs/promises';
 import path from 'path';
+import s3Service from './s3.service';
 
 export class SourceService {
   async createSource(
@@ -30,6 +31,7 @@ export class SourceService {
       path: string;
       size: number;
       mimetype: string;
+      s3Key: string;
     },
     metadata: {
       title: string;
@@ -45,6 +47,7 @@ export class SourceService {
       filePath: file.path,
       fileName: file.filename,
       fileSize: file.size,
+      s3Key: file.s3Key,
     });
 
     return source;
@@ -123,15 +126,21 @@ export class SourceService {
       throw new AppError(404, 'Source not found');
     }
 
-    // Delete associated file if exists
-    if (source.filePath) {
-      try {
-        await fs.unlink(source.filePath);
-      } catch (error) {
-        // Log error but don't throw - file might already be deleted
-        console.error('Error deleting file:', error);
-      }
+    if (source.s3Key) {
+
+    try {
+
+      await s3Service.deleteFile(source.s3Key);
+
+    } catch (error) {
+
+      console.error(
+        'Error deleting S3 object:',
+        error
+      );
+
     }
+  }
   }
 
   async markAsProcessed(sourceId: string, conceptCount?: number): Promise<ISourceDocument> {

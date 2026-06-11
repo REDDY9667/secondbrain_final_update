@@ -28,6 +28,7 @@ import logger from './utils/logger';
 
 // Create Express app
 const app: Express = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
 // Connect to MongoDB
@@ -36,10 +37,9 @@ connectDB();
 
 
 // Security middleware
-app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:4200',
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
@@ -97,6 +97,17 @@ app.use('/api/sources', protect, sourceRoutes);
 app.use('/api/decay', protect, decayRoutes);
 app.use('/api/challenges', protect, challengeRoutes);
 app.use('/api/suggestions', protect, suggestionRoutes);
+
+
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    name: 'SecondBrain API',
+    version: '1.0.0',
+    health: '/health',
+    docs: '/api-docs'
+  });
+});
 
 // 404 handler
 app.use(notFound);

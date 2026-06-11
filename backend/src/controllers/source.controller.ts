@@ -6,6 +6,7 @@ import logger from '../utils/logger';
 import { conceptExtractionService } from '../services/ai/concept-extraction.service';
 import { ConceptService } from '../services/concept.service';
 import { textExtractionService } from '../services/ai/text-extraction.service';
+import s3Service from '../services/s3.service';
 
 export class SourceController {
   async createSource(req: AuthRequest, res: Response, next: NextFunction) {
@@ -44,7 +45,14 @@ export class SourceController {
       }
 
       const { title, type, tags } = req.body;
+      const s3Key =
+        `uploads/${req.user._id}/${Date.now()}-${req.file.originalname}`;
 
+      await s3Service.uploadFile(
+        req.file.path,
+        s3Key,
+        req.file.mimetype
+      );
       const source = await sourceService.createSourceFromFile(
         req.user._id.toString(),
         {
@@ -52,10 +60,18 @@ export class SourceController {
           path: req.file.path,
           size: req.file.size,
           mimetype: req.file.mimetype,
+          s3Key,
         },
         {
           title: title || req.file.originalname,
-          type: type || 'other',
+          type:
+            req.file.mimetype === 'application/pdf'
+              ? 'pdf'
+              : req.file.mimetype === 'application/json'
+                ? 'note'
+                : req.file.mimetype === 'text/plain'
+                  ? 'note'
+                  : 'other',
           tags: tags ? tags.split(',') : [],
         }
       );
@@ -156,56 +172,59 @@ export class SourceController {
 
       let extractionResult;
 
-if (source.filePath) {
+      if (source.s3Key) {
 
-  // PDF extraction
-  if (source.type === 'pdf') {
+        const localFilePath =
+          await s3Service.downloadFile(source.s3Key);
 
-    extractionResult =
-      await conceptExtractionService.extractFromPDF(source.filePath);
+        // PDF extraction
+        if (source.type === 'pdf') {
 
-  } else {
+          extractionResult =
+            await conceptExtractionService.extractFromPDF(localFilePath);
 
-    // Text/markdown/note extraction
-    const extractionResultText =
-      await textExtractionService.extractFromTextFile(source.filePath);
+        } else {
 
-    const concepts =
-      await conceptExtractionService.extractConceptsFromLargeText(
-        extractionResultText.text
-      );
+          // Text/markdown/note extraction
+          const extractionResultText =
+            await textExtractionService.extractFromTextFile(localFilePath);
 
-    extractionResult = {
-      concepts,
-      sourceText:
-        extractionResultText.text.substring(0, 1000) + '...',
-      metadata: {
-        ...extractionResultText.metadata,
-        extractedAt: new Date(),
-      },
-    };
-  }
+          const concepts =
+            await conceptExtractionService.extractConceptsFromLargeText(
+              extractionResultText.text
+            );
 
-} else if (source.type === 'article' && source.url) {
+          extractionResult = {
+            concepts,
+            sourceText:
+              extractionResultText.text.substring(0, 1000) + '...',
+            metadata: {
+              ...extractionResultText.metadata,
+              extractedAt: new Date(),
+            },
+          };
+        }
 
-  extractionResult =
-    await conceptExtractionService.extractFromURL(source.url);
+      } else if (source.type === 'article' && source.url) {
 
-} else if (source.content) {
+        extractionResult =
+          await conceptExtractionService.extractFromURL(source.url);
 
-  const concepts =
-    await conceptExtractionService.extractConceptsFromText(source.content);
+      } else if (source.content) {
 
-  extractionResult = {
-    concepts,
-    sourceText: source.content.substring(0, 1000) + '...',
-    metadata: { extractedAt: new Date() },
-  };
+        const concepts =
+          await conceptExtractionService.extractConceptsFromText(source.content);
 
-} else {
+        extractionResult = {
+          concepts,
+          sourceText: source.content.substring(0, 1000) + '...',
+          metadata: { extractedAt: new Date() },
+        };
 
-  throw new AppError(400, 'Source does not have extractable content');
-}
+      } else {
+
+        throw new AppError(400, 'Source does not have extractable content');
+      }
 
       logger.info(
         `Extracted ${extractionResult.concepts.length} concepts from source: ${source._id}`

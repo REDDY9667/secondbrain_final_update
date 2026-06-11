@@ -1,0 +1,41 @@
+service: secondbrain-api
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-south-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:DeleteObject
+          Resource:
+            - arn:aws:s3:::secondbrain-files-abhinay/*
+  environment:
+    NODE_ENV: production
+    S3_BUCKET: secondbrain-files-abhinay
+    MONGODB_URI: ${ssm:/secondbrain/mongodb-uri}
+    REDIS_URL: ${ssm:/secondbrain/redis-url}
+    JWT_SECRET: ${ssm:/secondbrain/jwt-secret}
+    OPENAI_API_KEY: ${ssm:/secondbrain/openai-api-key}
+    FRONTEND_URL: https://staging.d215ixyd8k3mnf.amplifyapp.com
+    
+
+functions:
+  api:
+    handler: lambda-handler.handler
+    timeout: 30
+    events:
+      - httpApi: '*'
+
+  decayDetection:
+    handler: jobs/decay-detection.handler
+    timeout: 300
+    events:
+      - schedule: cron(0 6 * * ? *) # Daily at 6 AM UTC
+
+plugins:
+  - serverless-offline

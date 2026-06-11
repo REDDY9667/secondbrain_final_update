@@ -117,31 +117,45 @@ export class ConceptExtractionService {
   /**
    * Extract concepts from large text by chunking
    */
-  async extractConceptsFromLargeText(text: string): Promise<ExtractedConcept[]> {
-    const chunks = textExtractionService.chunkText(text, 4000);
+  async extractConceptsFromLargeText(
+    text: string
+  ): Promise<ExtractedConcept[]> {
+
+    const chunks =
+      textExtractionService.chunkText(
+        text.substring(0, 10000),
+        4000
+      );
+
     const allConcepts: ExtractedConcept[] = [];
 
-    // Process chunks in batches to avoid overwhelming the API
-    for (let i = 0; i < chunks.length && i < 5; i++) {
-      // Limit to first 5 chunks
+    for (let i = 0; i < chunks.length && i < 2; i++) {
+      console.log(`START CHUNK ${i}`);
       try {
-        const concepts = await this.extractConceptsFromText(chunks[i], {
-          maxConcepts: 8,
-        });
+
+        const concepts =
+          await this.extractConceptsFromText(
+            chunks[i],
+            { maxConcepts: 5 }
+          );
+
         allConcepts.push(...concepts);
 
-        // Small delay between chunks to respect rate limits
-        if (i < chunks.length - 1) {
-          await this.delay(1000);
-        }
       } catch (error) {
-        console.error(`Error processing chunk ${i + 1}:`, error);
-        // Continue with other chunks
-      }
-    }
 
-    // Remove duplicates based on title similarity
-    return this.deduplicateConcepts(allConcepts);
+        console.error(
+          `Error processing chunk ${i + 1}:`,
+          error
+        );
+
+      }
+      console.log(`END CHUNK ${i}`);
+    } 
+
+    console.log("BEFORE DEDUP");
+    const result = this.deduplicateConcepts(allConcepts);
+    console.log("AFTER DEDUP");
+    return result;
   }
 
   /**

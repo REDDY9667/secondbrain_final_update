@@ -7,6 +7,7 @@ export interface ISourceDocument extends Document {
   url?: string;
   filePath?: string;
   fileName?: string;
+  s3Key?: string;
   fileSize?: number;
   content?: string;
   metadata: {
@@ -64,6 +65,10 @@ const SourceSchema = new Schema<ISourceDocument>(
       default: null,
     },
     fileName: {
+      type: String,
+      default: null,
+    },
+    s3Key: {
       type: String,
       default: null,
     },
