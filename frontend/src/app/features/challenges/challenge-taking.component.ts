@@ -65,6 +65,7 @@ export class ChallengeTakingComponent implements OnInit {
       next: (challenges) => {
         if (challenges.length === 0) {
           // No existing challenges, generate new ones
+          this.loading.set(false);
           this.generateChallenges();
         } else {
           this.challenges.set(challenges);
@@ -88,6 +89,7 @@ export class ChallengeTakingComponent implements OnInit {
     this.challengeService.generateChallenges(this.conceptId()!, undefined, 3).subscribe({
       next: (result) => {
         this.challenges.set(result.challenges);
+        this.loading.set(false);
         this.generating.set(false);
         this.snackBar.open(
           `Generated ${result.generated} new challenge(s)!`,
