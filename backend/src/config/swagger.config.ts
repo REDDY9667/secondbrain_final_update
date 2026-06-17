@@ -25,6 +25,10 @@ const options: swaggerJsdoc.Options = {
         url: 'https://api.secondbrain.com',
         description: 'Production server',
       },
+      {
+        url: 'https://main.d3vzqnp5wqmsa5.amplifyapp.com',
+        description: 'Deployment server',
+      },
     ],
     components: {
       securitySchemes: {
