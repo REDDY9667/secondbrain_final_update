@@ -18,16 +18,12 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Development server',
-      },
-      {
-        url: 'https://api.secondbrain.com',
+        url: 'https://g7tptkcqua.execute-api.ap-south-1.amazonaws.com',
         description: 'Production server',
       },
       {
-        url: 'https://main.d3vzqnp5wqmsa5.amplifyapp.com',
-        description: 'Deployment server',
+        url: 'http://localhost:3000',
+        description: 'Development server',
       },
     ],
     components: {
